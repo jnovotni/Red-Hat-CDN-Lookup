@@ -20,7 +20,7 @@ begin
 
     def get_info(ip, ipapi_key)
         # Get the IP from IPapi.com and return
-        uri = URI("http://api.ipapi.com/#{ip}?access_key=#{ipapi_key}&format=1")
+        uri = URI("http://api.ipapi.com/#{ip}?access_key=#{ipapi_key}&format=1&fields=main")
         output = Net::HTTP.get(uri)
         JSON.parse(output)
     end
@@ -41,10 +41,23 @@ begin
         end
     end
 
+    def get_key
+        puts
+        puts "################# API Key Required to run ###############################",""
+        puts "Signup for a free API key at  ( https://ipapi.com/signup/free )", "Then, Fetch your API key from the dashboard ( https://ipapi.com/dashboard )",""
+        puts "##########################################################################"
+        printf "Please enter your ipapi.com API Key: "
+        key = gets.strip
+        return key
+    end
+
     ########### Start Here ####################
-    headings = ["ip", "type", "continent_code", "continent_name", "country_code", "country_name", "region_code", "region_name", "city", "zip"]
+    headings = ["ip", "type", "continent_code", "continent_name", "country_code", "country_name", "region_code", "region_name", "city", "zip", "latitude", "longitude"]
+    key = ARGV[0] || key = nil
     ip_array = get_ip_list
-    key = "ENTER YOUR ipapi.com API KEY HERE"
+    if key.nil?
+        key = get_key()
+    end
 
     # Create the CSV file first, as a new clean file
     create_csv(headings)
