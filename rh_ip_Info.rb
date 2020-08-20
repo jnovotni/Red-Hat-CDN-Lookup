@@ -4,14 +4,25 @@ require 'net/http'
 
 begin
     # Define the methods we'll use below
+    def get_ip_list
+        ips = Array.new
+        uri = URI("https://access.redhat.com/sites/default/files/cdn_redhat_com_cac.json")
+        # Fetch the IP Address list from Red Hat's Knowledgebase
+        ip_list_json = JSON.parse(Net::HTTP.get(uri))
+        # Go through the returned JSON and grab the IP's
+        ip_list_json["cidr_list"].each do |hash|
+            ips.append(hash["ip_prefix"])
+        end
+        # Strip off the /32 from the IP as we don't need the subnet
+        ips.map!{ |element| element.gsub("/32", '') }
+        return ips
+    end
 
     def get_info(ip, ipapi_key)
-        ip_addr = ip
-        url = "http://api.ipapi.com/#{ip_addr}?access_key=#{ipapi_key}&format=1"
-
         # Get the IP from IPapi.com and return
-        uri = URI(url)
-        Net::HTTP.get(uri)
+        uri = URI("http://api.ipapi.com/#{ip}?access_key=#{ipapi_key}&format=1")
+        output = Net::HTTP.get(uri)
+        JSON.parse(output)
     end
 
     def create_csv(headings)
@@ -32,19 +43,16 @@ begin
 
     ########### Start Here ####################
     headings = ["ip", "type", "continent_code", "continent_name", "country_code", "country_name", "region_code", "region_name", "city", "zip"]
-    key = "ENTER YOUR KEY HERE"
-
-    # Take our IP address and get its information in JSON format
-    output = get_info('23.251.85.70', key)
-    json = JSON.parse(output)
+    ip_array = get_ip_list
+    key = "ENTER YOUR ipapi.com API KEY HERE"
 
     # Create the CSV file first, as a new clean file
     create_csv(headings)
 
-    # Add entry to CSV
-    append_csv(json, headings)
-    append_csv(json, headings)
-
+    # Cycle through the IP List array and fetch its information from IPAPI.com, then update the CSV with the gathered information
+    ip_array.each do |loop|
+        append_csv((get_info(loop, key)), headings)
+    end
 
 rescue => exception
 
