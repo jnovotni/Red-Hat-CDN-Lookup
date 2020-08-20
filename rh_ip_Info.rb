@@ -32,7 +32,7 @@ begin
     end
 
     def append_csv(json, headings)
-        entry = []
+        entry = Array.new
         CSV.open("IP_List.csv", "a+") do |csv|
             headings.each do |loop|
                 entry.append(json[loop])
@@ -53,11 +53,8 @@ begin
 
     ########### Start Here ####################
     headings = ["ip", "type", "continent_code", "continent_name", "country_code", "country_name", "region_code", "region_name", "city", "zip", "latitude", "longitude"]
-    key = ARGV[0] || key = nil
-    ip_array = get_ip_list
-    if key.nil?
-        key = get_key()
-    end
+    key = ARGV[0] || key = get_key()
+    ip_array = get_ip_list()
 
     # Create the CSV file first, as a new clean file
     create_csv(headings)
